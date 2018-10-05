@@ -129,11 +129,11 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
         return view
     }
 
-    override fun onDetach() {
+    override fun onDestroy() {
+
         if (!getNews.isCancelled){
             getNews.cancel(true)
         }
-
-        super.onDetach()
+        super.onDestroy()
     }
 }
