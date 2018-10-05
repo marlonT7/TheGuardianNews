@@ -33,7 +33,7 @@ class NewFragment : Fragment() {
         val headline = view.findViewById<TextView>(R.id.headline_view)
         headline.text = new?.headline
         val photo = view.findViewById<ImageView>(R.id.photo_view)
-        Picasso.get().load(new?.thumbnails).fit().centerCrop()
+        Picasso.get().load(new?.thumbnail).fit().centerCrop()
                 .placeholder(R.drawable.no_image_available)
                 .error(R.drawable.no_image_available)
                 .into(photo)
@@ -44,10 +44,6 @@ class NewFragment : Fragment() {
         val url = view.findViewById<TextView>(R.id.url_view)
         url.text = new?.url
         url.setOnClickListener { openWebSite() }
-//        val sectionLabel=view.findViewById<TextView>(R.id.section_label)
-//        sectionLabel.text=getText(R.string.section_text)
-//        val urlLabel=view.findViewById<TextView>(R.id.url_label)
-//        urlLabel.text=getText(R.string.url_text)
         return view
 
     }
@@ -57,16 +53,5 @@ class NewFragment : Fragment() {
         val intent = Intent(Intent.ACTION_VIEW)
         intent.data = Uri.parse(new?.url)
         startActivity(intent)
-    }
-
-    companion object {
-        @JvmStatic
-        fun newInstance() =
-                NewFragment().apply {
-                    arguments = Bundle().apply {
-                        putParcelable(ARG_PARAM1, new)
-
-                    }
-                }
     }
 }

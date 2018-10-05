@@ -4,11 +4,11 @@ import android.os.Parcel
 import android.os.Parcelable
 
 data class New(
-        val sectionName: String,
-        val headline: String,
-        val url: String,
-        val thumbnails: String,
-        val bodyText: String
+        var sectionName: String,
+        var headline: String,
+        var url: String,
+        var thumbnail: String,
+        var bodyText: String
 ) : Parcelable {
     constructor(parcel: Parcel) : this(
             parcel.readString(),
@@ -21,7 +21,7 @@ data class New(
         parcel.writeString(sectionName)
         parcel.writeString(headline)
         parcel.writeString(url)
-        parcel.writeString(thumbnails)
+        parcel.writeString(thumbnail)
         parcel.writeString(bodyText)
     }
 

@@ -21,7 +21,6 @@ class NewActivity : AppCompatActivity() {
             setDisplayShowHomeEnabled(true)
         }
         // Open a new fragment
-
         val newFragment = NewFragment()
         // Send data to the fragment
         newFragment.arguments = intent.extras

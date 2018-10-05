@@ -55,6 +55,15 @@ class MainActivity : AppCompatActivity() {
         drawerToggle = setupDrawerToggle()
         // Tie DrawerLayout events to the ActionBarToggle
         drawerLayout.addDrawerListener(drawerToggle)
+
+        val fragment = NewListFragment()
+        val bundle = Bundle()
+        bundle.putString(KEY_SECTION, GENERAL)
+        bundle.putString(KEY_END, QUERY_END)
+        fragment.arguments = bundle
+        // Insert the fragment by replacing any existing fragment
+        supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
+
     }
 
     private fun setupDrawerToggle(): ActionBarDrawerToggle {

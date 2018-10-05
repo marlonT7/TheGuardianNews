@@ -7,7 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import kotlinx.android.synthetic.main.item.view.*
 
-class NewsListAdapter(private var news: ArrayList<New>, private val selectedNew: SelectedNew) :
+class NewsListAdapter(private var news: MutableList<New>, private val selectedNew: SelectedNew) :
         RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     //Interface to work in the fragment
@@ -21,10 +21,14 @@ class NewsListAdapter(private var news: ArrayList<New>, private val selectedNew:
     // Each data item is just a string in this case that is shown in a TextView.
     inner class MyViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
         fun bind() {
-            itemView.setOnClickListener { selectedNew.openNew(news[adapterPosition]) }
+            itemView.setOnClickListener { news[adapterPosition].let { it1 -> selectedNew.openNew(it1) } }
         }
     }
 
+    fun setData(news: MutableList<New>){
+        this.news=news
+        notifyDataSetChanged()
+    }
 
     // Create new views (invoked by the layout manager)
     override fun onCreateViewHolder(parent: ViewGroup,
