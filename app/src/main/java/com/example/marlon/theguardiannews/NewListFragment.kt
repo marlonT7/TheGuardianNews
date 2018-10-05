@@ -18,7 +18,7 @@ private const val KEY_END = "End query key"
 private const val ARG_PARAM1 = "new"
 
 class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNewsCallback {
-    override fun onFinished(new: New, newsList: MutableList<New>) {
+    override fun finished(new: New, newsList: MutableList<New>) {
         if (news[0].headline == "loading"){
             news.removeAt(0)
             news.add(new)
@@ -33,7 +33,7 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
        updateData(newsList)
     }
 
-    fun updateData(newsList: MutableList<New>){
+    private fun updateData(newsList: MutableList<New>){
         news=newsList
         viewAdapter.setData(news)
     }
@@ -73,6 +73,7 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
     private var urlQueryEnd: String? = null
     // Final url to send to request
     private lateinit var urlQuery: String
+    private lateinit var getNews:GetNews
     private var news: MutableList<New> = mutableListOf(New(headline = "loading",
             url = "loading",
             bodyText = "loading",
@@ -89,7 +90,8 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
             urlQueryEnd = it.getString(KEY_END)
         }
         createUrl()
-        GetNews(urlQuery, this).execute()
+        getNews=GetNews(urlQuery, this)
+        getNews.execute()
     }
 
     private fun createUrl() {
@@ -125,5 +127,13 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
             adapter = viewAdapter
         }
         return view
+    }
+
+    override fun onDetach() {
+        if (!getNews.isCancelled){
+            getNews.cancel(true)
+        }
+
+        super.onDetach()
     }
 }
