@@ -25,6 +25,7 @@ class NewsListAdapter(private var news: MutableList<New>, private val selectedNe
         }
     }
 
+    // Set new data after an API request
     fun setData(news: MutableList<New>){
         this.news=news
         notifyDataSetChanged()

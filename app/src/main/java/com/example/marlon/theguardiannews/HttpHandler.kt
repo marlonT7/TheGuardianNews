@@ -25,6 +25,7 @@ class HttpHandler {
             Log.e(TAG, "ProtocolException: " + e.message)
         } catch (e: IOException) {
             Log.e(TAG, "IOException: " + e.message)
+            response=null
         } catch (e: Exception) {
             Log.e(TAG, "Exception: " + e.message)
         }

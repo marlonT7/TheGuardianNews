@@ -169,5 +169,4 @@ class MainActivity : AppCompatActivity() {
         supportFragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit()
         title = "Search"
     }
-
 }

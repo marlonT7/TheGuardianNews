@@ -1,6 +1,7 @@
 package com.example.marlon.theguardiannews
 
 import android.content.Intent
+import android.os.AsyncTask
 import android.os.Bundle
 import android.support.v4.app.Fragment
 import android.support.v7.widget.LinearLayoutManager
@@ -18,26 +19,29 @@ private const val KEY_END = "End query key"
 private const val ARG_PARAM1 = "new"
 
 class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNewsCallback {
-    override fun finished(new: New, newsList: MutableList<New>) {
-        if (news[0].headline == "loading"){
+    // Updates the data when async task is finished
+    override fun finished(newsList: MutableList<New>) {
+        if (newsList.size==0&&(news[0]==newLoading||news[0]==newNotFound)) {
+            // Remove the default value and set Not found if the result don't has data
             news.removeAt(0)
-            news.add(new)
+            news.add(newNotFound)
             viewAdapter.notifyDataSetChanged()
         } else {
             updateData(newsList)
         }
-
     }
 
-    override fun getResult(newsList: MutableList<New>) {
-       updateData(newsList)
-    }
-
-    private fun updateData(newsList: MutableList<New>){
-        news=newsList
+    // Send the new data to the adapter
+    private fun updateData(newsList: MutableList<New>) {
+        if (page == 1) {
+            news = newsList
+        } else {
+            news.addAll(newsList)
+        }
         viewAdapter.setData(news)
     }
 
+    // Displays in background errors
     override fun displayErrorMessage(errorMessage: String) {
         this.activity?.runOnUiThread {
             Toast.makeText(this.activity,
@@ -45,14 +49,14 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
                     Toast.LENGTH_LONG).show()
         }
     }
+    // Display async task messages
+    override fun displayMessage(message: String) {
+        Toast.makeText(this.activity,
+                message,
+                Toast.LENGTH_LONG).show()
+    }
 
-//    override fun displayMessage(message: String) {
-//
-//        Toast.makeText(this.activity,
-//                message,
-//                Toast.LENGTH_LONG).show()
-//    }
-
+    // Open the new in other activity
     override fun openNew(new: New) {
         val bundle = Bundle()
         bundle.putParcelable(ARG_PARAM1, new)
@@ -73,12 +77,19 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
     private var urlQueryEnd: String? = null
     // Final url to send to request
     private lateinit var urlQuery: String
-    private lateinit var getNews:GetNews
-    private var news: MutableList<New> = mutableListOf(New(headline = "loading",
+    private lateinit var getNews: GetNews
+    private val newNotFound = New(headline = "Not found",
+            sectionName = "Not found",
+            url = "Not found",
+            thumbnail = "Not found",
+            bodyText = "Not found")
+    private val newLoading = New(headline = "loading",
             url = "loading",
             bodyText = "loading",
             thumbnail = "loading",
-            sectionName = "loading"))
+            sectionName = "loading")
+
+    private var news: MutableList<New> = mutableListOf(newLoading)
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -89,18 +100,21 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
             urlQueryPart3 = it.getString(KEY_SECTION3)
             urlQueryEnd = it.getString(KEY_END)
         }
-        createUrl()
-        getNews=GetNews(urlQuery, this)
+        // Request data to the API y an async task
+        getNews = GetNews(createUrl(), this)
         getNews.execute()
     }
 
-    private fun createUrl() {
+    // Increase in 1 the page and formats the url to request to the API
+    private fun createUrl(): String {
+        // change the page in the url
         page++
         urlQuery = if (urlQueryPart3 == null || urlQueryPart3 == "") {
             urlQueryPart1 + page + urlQueryEnd
         } else {
             urlQueryPart1 + page + urlQueryPart2 + urlQueryPart3 + urlQueryEnd
         }
+        return urlQuery
     }
 
     private lateinit var viewManager: LinearLayoutManager
@@ -117,23 +131,45 @@ class NewListFragment : Fragment(), NewsListAdapter.SelectedNew, GetNews.GetNews
         // Sets data to the recycler view
         viewAdapter = NewsListAdapter(news, this)
         // Divides the data in categories and send to the corresponding view page
+
         recyclerView = view.findViewById<RecyclerView>(R.id.news_list_view).apply {
             // use this setting to improve performance if you know that changes
             // in content do not change the layout size of the RecyclerView
             setHasFixedSize(true)
             // use a linear layout manager
             layoutManager = viewManager
-            // specify an viewAdapter (see also next example)
+            // specify an viewAdapter
             adapter = viewAdapter
+            // Add the pagination, loads more data when cant scroll down
+            addOnScrollListener(OnScrollListener(this@NewListFragment))
         }
         return view
     }
 
     override fun onDestroy() {
-
-        if (!getNews.isCancelled){
+        // Cancel the async task when the fragment destroys
+        if (!getNews.isCancelled) {
             getNews.cancel(true)
         }
         super.onDestroy()
     }
+
+    class OnScrollListener(private val context: NewListFragment) : RecyclerView.OnScrollListener() {
+
+        override fun onScrollStateChanged(recyclerView: RecyclerView?, newState: Int) {
+            super.onScrollStateChanged(recyclerView, newState)
+            if (!(recyclerView!!.canScrollVertically(1))) {
+                // If the task has finished, run the task with a new url
+                if ((context.getNews.status==(AsyncTask.Status.FINISHED))) {
+                    context.getNews.cancel(true)
+                    context.getNews= GetNews(context.createUrl(),context)
+                    context.getNews.execute()
+                }
+
+            }
+        }
+    }
 }
+
+
+
